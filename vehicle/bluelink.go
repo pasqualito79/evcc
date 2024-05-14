@@ -20,6 +20,7 @@ type Bluelink struct {
 func init() {
 	registry.Add("kia", NewKiaFromConfig)
 	registry.Add("hyundai", NewHyundaiFromConfig)
+	registry.Add("genesis", NewGenesisFromConfig)
 }
 
 // NewHyundaiFromConfig creates a new vehicle
@@ -52,6 +53,24 @@ func NewKiaFromConfig(other map[string]interface{}) (api.Vehicle, error) {
 	}
 
 	return newBluelinkFromConfig("kia", other, settings)
+}
+
+func NewGenesisFromConfig(other map[string]interface{}) (api.Vehicle, error) {
+	settings := bluelink.Config{
+		URI: "https://prd-eu-ccapi.genesis.com",
+		//URI:               "https://accounts-eu.genesis.com",
+		BasicToken:        "NmQ0NzdjMzgtM2NhNC00Y2YzLTk1NTctMmExOTI5YTk0NjU0OktVeTQ5WHhQekxwTHVvSzB4aEJDNzdXNlZYaG10UVI5aVFobUlGampvWTRJcHhzVg==",
+		CCSPServiceID:     "3020afa2-30ff-412a-aa51-d28fbe901e10",
+		CCSPApplicationID: bluelink.GenesisAppID,
+		AuthClientID:      "3020afa2-30ff-412a-aa51-d28fbe901e10",
+		BrandAuthUrl:      "https://accounts-eu.genesis.com/realms/eugenesisidm/protocol/openid-connect/auth?client_id=%s&scope=openid+profile+email+phone&response_type=code&hkid_session_reset=true&redirect_uri=%s/api/v1/user/integration/redirect/login&ui_locales=%s&state=3020afa2-30ff-412a-aa51-d28fbe901e10:27869fe0-dbf9-4099-851a-809355c5171f",
+		//BrandAuthUrl:      "https://accounts-eu.genesis.com/auth/realms/eugenesisidm/protocol/openid-connect/auth?client_id=%s&scope=openid+profile+email+phone&response_type=code&hkid_session_reset=true&redirect_uri=%s/api/v1/user/integration/redirect/login&ui_locales=%s&state=%s:%s",
+		//BrandAuthUrl: "https://accounts-eu.genesis.com/auth/realms/eugenesisidm/protocol/openid-connect/auth?client_id=3020afa2-30ff-412a-aa51-d28fbe901e10&scope=openid+profile+email+phone&response_type=code&hkid_session_reset=true&redirect_uri=https://prd-eu-ccapi.genesis.com/api/v1/user/integration/redirect/login&ui_locales=en&state=%s:%s",
+		PushType: "GCM",
+		Cfb:      "RFtoRq/vDXJmRndoZaZQyYo3/qFLtVReW8P7utRPcc0ZxOzOELm9mexvviBk/qqIp4A=",
+	}
+
+	return newBluelinkFromConfig("genesis", other, settings)
 }
 
 // newBluelinkFromConfig creates a new Vehicle

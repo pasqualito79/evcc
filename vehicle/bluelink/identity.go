@@ -112,10 +112,10 @@ func (v *Identity) getCookies() (cookieClient *request.Helper, err error) {
 	})
 
 	uri := fmt.Sprintf(
-		"%s/api/v1/user/oauth2/authorize?response_type=code&state=test&client_id=%s&redirect_uri=%s/api/v1/user/oauth2/redirect",
+		"%s/api/v1/user/oauth2/authorize?response_type=code&state=test&client_id=%s&redirect_uri=https://accounts-eu.genesis.com/realms/eugenesisidm/ga-api/redirect/api/v1/user/oauth2/redirect",
 		v.config.URI,
 		v.config.CCSPServiceID,
-		v.config.URI,
+	//	v.config.URI,
 	)
 
 	resp, err := cookieClient.Get(uri)
@@ -284,7 +284,7 @@ func (v *Identity) exchangeCode(accCode string) (oauth.Token, error) {
 
 	data := url.Values{
 		"grant_type":   {"authorization_code"},
-		"redirect_uri": {v.config.URI + "/api/v1/user/oauth2/redirect"},
+		"redirect_uri": {"https://accounts-eu.genesis.com/realms/eugenesisidm/ga-api/redirect2"},
 		"code":         {accCode},
 	}
 
