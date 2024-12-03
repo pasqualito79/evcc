@@ -137,13 +137,18 @@ func (site *Site) Vehicles() site.Vehicles {
 	return &vehicles{log: site.log}
 }
 
-// GetCircuit returns the circuit
+// GetCircuit returns the root circuit
 func (site *Site) GetCircuit() api.Circuit {
-	if site.circuit == nil {
-		// return untyped nil
-		return nil
-	}
+	site.RLock()
+	defer site.RUnlock()
 	return site.circuit
+}
+
+// SetCircuit sets the root circuit
+func (site *Site) SetCircuit(circuit api.Circuit) {
+	site.Lock()
+	defer site.Unlock()
+	site.circuit = circuit
 }
 
 // GetPrioritySoc returns the PrioritySoc
@@ -252,13 +257,14 @@ func (site *Site) GetResidualPower() float64 {
 
 // SetResidualPower sets the ResidualPower
 func (site *Site) SetResidualPower(power float64) error {
+	site.log.DEBUG.Println("set residual power:", power)
+
 	site.Lock()
 	defer site.Unlock()
 
-	site.log.DEBUG.Println("set residual power:", power)
-
 	if site.ResidualPower != power {
 		site.ResidualPower = power
+		settings.SetFloat(keys.ResidualPower, site.ResidualPower)
 		site.publish(keys.ResidualPower, site.ResidualPower)
 	}
 
@@ -301,32 +307,50 @@ func (site *Site) GetTariff(tariff string) api.Tariff {
 	}
 }
 
-// GetBatteryControl returns the battery control mode
+// GetBatteryDischargeControl returns the battery control mode (no discharge only)
 func (site *Site) GetBatteryDischargeControl() bool {
 	site.RLock()
 	defer site.RUnlock()
 	return site.batteryDischargeControl
 }
 
-// SetBatteryControl sets the battery control mode
+// SetBatteryDischargeControl sets the battery control mode (no discharge only)
 func (site *Site) SetBatteryDischargeControl(val bool) error {
 	site.log.DEBUG.Println("set battery discharge control:", val)
 
-	if site.GetBatteryDischargeControl() != val {
-		// reset to normal when disabling
-		if mode := site.GetBatteryMode(); !val && batteryModeModified(mode) {
-			if err := site.applyBatteryMode(api.BatteryNormal); err != nil {
-				return err
-			}
-		}
+	site.Lock()
+	defer site.Unlock()
 
-		site.Lock()
-		defer site.Unlock()
-
+	if site.batteryDischargeControl != val {
 		site.batteryDischargeControl = val
 		settings.SetBool(keys.BatteryDischargeControl, val)
 		site.publish(keys.BatteryDischargeControl, val)
 	}
 
 	return nil
+}
+
+func (site *Site) GetBatteryGridChargeLimit() *float64 {
+	site.RLock()
+	defer site.RUnlock()
+	return site.batteryGridChargeLimit
+}
+
+func (site *Site) SetBatteryGridChargeLimit(val *float64) {
+	site.log.DEBUG.Println("set grid charge limit:", printPtr("%.1f", val))
+
+	site.Lock()
+	defer site.Unlock()
+
+	if !ptrValueEqual(site.batteryGridChargeLimit, val) {
+		site.batteryGridChargeLimit = val
+
+		if val == nil {
+			settings.SetString(keys.BatteryGridChargeLimit, "")
+			site.publish(keys.BatteryGridChargeLimit, nil)
+		} else {
+			settings.SetFloat(keys.BatteryGridChargeLimit, *val)
+			site.publish(keys.BatteryGridChargeLimit, *val)
+		}
+	}
 }

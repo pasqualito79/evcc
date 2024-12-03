@@ -58,7 +58,7 @@ const (
 	mennekesRegChargedEnergyTotal   = 0x1000 // float32
 
 	mennekesAllowed           = 1
-	mennekesHeartbeatInterval = 8 * time.Second
+	mennekesHeartbeatInterval = 5 * time.Second
 	mennekesHeartbeatToken    = 0x55AA // 21930
 )
 
@@ -83,7 +83,7 @@ func NewMennekesCompactFromConfig(other map[string]interface{}) (api.Charger, er
 		return nil, err
 	}
 
-	return NewMennekesCompact(cc.URI, cc.Device, cc.Comset, cc.Baudrate, modbus.ProtocolFromRTU(cc.RTU), cc.ID, cc.Timeout)
+	return NewMennekesCompact(cc.URI, cc.Device, cc.Comset, cc.Baudrate, cc.Settings.Protocol(), cc.ID, cc.Timeout)
 }
 
 // NewMennekesCompact creates Mennekes charger

@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-//go:generate mockgen -package api -destination mock.go github.com/evcc-io/evcc/api Charger,ChargeState,CurrentLimiter,PhaseSwitcher,Identifier,Meter,MeterEnergy,PhaseCurrents,Vehicle,ChargeRater,Battery,Tariff,BatteryController,Circuit
+//go:generate mockgen -package api -destination mock.go github.com/evcc-io/evcc/api Charger,ChargeState,CurrentLimiter,CurrentGetter,PhaseSwitcher,PhaseGetter,Identifier,Meter,MeterEnergy,PhaseCurrents,Vehicle,ChargeRater,Battery,Tariff,BatteryController,Circuit
 
 // Meter provides total active power in W
 type Meter interface {
@@ -44,9 +44,18 @@ type BatteryCapacity interface {
 	Capacity() float64
 }
 
+// MaxACPower provides max AC power in W
+type MaxACPower interface {
+	MaxACPower() float64
+}
+
 // ChargeState provides current charging status
 type ChargeState interface {
 	Status() (ChargeStatus, error)
+}
+
+type StatusReasoner interface {
+	StatusReason() (Reason, error)
 }
 
 // CurrentController provides settings charging maximum charging current
@@ -59,7 +68,7 @@ type CurrentGetter interface {
 	GetMaxCurrent() (float64, error)
 }
 
-// BatteryController optionally allows to control home battery (dis)charging behaviour
+// BatteryController optionally allows to control home battery (dis)charging behavior
 type BatteryController interface {
 	SetBatteryMode(BatteryMode) error
 }
@@ -111,7 +120,7 @@ type Authorizer interface {
 	Authorize(key string) error
 }
 
-// PhaseDescriber returns the number of availablephases
+// PhaseDescriber returns the number of available phases
 type PhaseDescriber interface {
 	Phases() int
 }
@@ -222,6 +231,7 @@ type Circuit interface {
 	SetTitle(string)
 	GetParent() Circuit
 	RegisterChild(child Circuit)
+	Wrap(parent Circuit) error
 	HasMeter() bool
 	GetMaxPower() float64
 	GetMaxCurrent() float64
@@ -230,4 +240,9 @@ type Circuit interface {
 	Update([]CircuitLoad) error
 	ValidateCurrent(old, new float64) float64
 	ValidatePower(old, new float64) float64
+}
+
+// Redactor is an interface to redact sensitive data
+type Redactor interface {
+	Redacted() any
 }

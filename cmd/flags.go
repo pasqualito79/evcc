@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 const (
@@ -11,6 +10,9 @@ const (
 
 	flagIgnoreDatabase            = "ignore-db"
 	flagIgnoreDatabaseDescription = "Run command ignoring service database"
+
+	flagDisableAuth            = "disable-auth"
+	flagDisableAuthDescription = "Disable authentication (dangerous)"
 
 	flagBatteryMode                = "battery-mode"
 	flagBatteryModeDescription     = "Set battery mode (normal, hold, charge)"
@@ -25,6 +27,9 @@ const (
 
 	flagCloud            = "cloud"
 	flagCloudDescription = "Use cloud service (requires sponsor token)"
+
+	flagReset            = "reset"
+	flagResetDescription = "Reset migrated settings"
 
 	flagEnable  = "enable"
 	flagDisable = "disable"

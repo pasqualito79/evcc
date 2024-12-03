@@ -1,22 +1,22 @@
 <template>
-	<p class="mb-0" data-testid="plan-warnings">
-		<span v-if="targetIsAboveLimit" class="d-block text-secondary mb-1">
+	<p class="mb-3 root" data-testid="plan-warnings">
+		<span v-if="targetIsAboveLimit" class="d-block evcc-gray mb-1">
 			{{ $t("main.targetCharge.targetIsAboveLimit", { limit: limitFmt }) }}
 		</span>
-		<span v-if="['off', 'now'].includes(mode)" class="d-block text-secondary mb-1">
+		<span v-if="['off', 'now'].includes(mode)" class="d-block evcc-gray mb-1">
 			{{ $t("main.targetCharge.onlyInPvMode") }}
 		</span>
-		<span v-if="timeTooFarInTheFuture" class="d-block text-secondary mb-1">
+		<span v-if="timeTooFarInTheFuture" class="d-block evcc-gray mb-1">
 			{{ $t("main.targetCharge.targetIsTooFarInTheFuture") }}
 		</span>
-		<span v-if="costLimitExists" class="d-block text-secondary mb-1">
+		<span v-if="costLimitExists" class="d-block evcc-gray mb-1">
 			{{ $t("main.targetCharge.costLimitIgnore", { limit: costLimitText }) }}
 		</span>
 		<span v-if="notReachableInTime" class="d-block text-warning mb-1">
-			{{ $t("main.targetCharge.notReachableInTime", { endTime: endTimeFmt }) }}
+			{{ $t("main.targetCharge.notReachableInTime", { overrun: overrunFmt }) }}
 		</span>
-		<span v-if="targetIsAboveVehicleLimit" class="d-block text-danger mb-1">
-			{{ $t("main.targetCharge.targetIsAboveVehicleLimit", { limit: vehicleLimitFmt }) }}
+		<span v-if="targetIsAboveVehicleLimit" class="d-block text-warning mb-1">
+			{{ $t("main.targetCharge.targetIsAboveVehicleLimit") }}
 		</span>
 	</p>
 </template>
@@ -45,6 +45,7 @@ export default {
 		tariff: Object,
 		plan: Object,
 		vehicleLimitSoc: Number,
+		planOverrun: Number,
 	},
 	computed: {
 		endTime: function () {
@@ -54,11 +55,11 @@ export default {
 			const { plan } = this.plan;
 			return plan[plan.length - 1].end;
 		},
-		endTimeFmt: function () {
-			if (!this.endTime) {
+		overrunFmt: function () {
+			if (!this.planOverrun) {
 				return "";
 			}
-			return this.fmtAbsoluteDate(new Date(this.endTime));
+			return this.fmtDuration(this.planOverrun, true, "m");
 		},
 		timeTooFarInTheFuture: function () {
 			if (!this.effectivePlanTime) {
@@ -99,19 +100,16 @@ export default {
 			if (this.socBasedPlanning) {
 				return this.fmtSoc(this.effectiveLimitSoc);
 			}
-			return this.fmtKWh(this.limitEnergy * 1e3);
-		},
-		vehicleLimitFmt: function () {
-			return this.fmtSoc(this.vehicleLimitSoc);
+			return this.fmtWh(this.limitEnergy * 1e3);
 		},
 		goalFmt: function () {
 			if (this.socBasedPlanning) {
 				return this.fmtSoc(this.effectivePlanSoc);
 			}
-			return this.fmtKWh(this.planEnergy * 1e3);
+			return this.fmtWh(this.planEnergy * 1e3);
 		},
 		costLimitExists: function () {
-			return this.smartCostLimit !== 0;
+			return this.smartCostLimit !== null;
 		},
 		costLimitText: function () {
 			if (this.isCo2) {
@@ -134,3 +132,9 @@ export default {
 	},
 };
 </script>
+
+<style scoped>
+.root:empty {
+	display: none;
+}
+</style>

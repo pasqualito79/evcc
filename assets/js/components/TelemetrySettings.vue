@@ -7,13 +7,18 @@
 			class="form-check-input"
 			type="checkbox"
 			role="switch"
-			:disabled="!sponsor"
+			:disabled="!sponsorActive"
 			@change="change"
 		/>
 		<div class="form-check-label">
 			<label for="telemetryEnabled">
 				{{ $t("footer.telemetry.optIn") }}
-				<i18n-t v-if="sponsor" tag="span" keypath="footer.telemetry.optInMoreDetails">
+				<i18n-t
+					v-if="sponsorActive"
+					tag="span"
+					keypath="footer.telemetry.optInMoreDetails"
+					scope="global"
+				>
 					<a :href="docsLink" target="_blank">
 						{{ $t("footer.telemetry.optInMoreDetailsLink") }}
 					</a>
@@ -40,7 +45,7 @@ function parseMarkdown(markdownText) {
 
 export default {
 	name: "TelemetrySettings",
-	props: { sponsor: String },
+	props: { sponsorActive: Boolean },
 	data() {
 		return {
 			error: null,
